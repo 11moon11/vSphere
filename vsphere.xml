@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="vsphere" default="all">
+  
+  
+  <property file="vsphere.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.maven:_asm:asm-commons:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/asm/asm-commons/3.0/asm-commons-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_asm:asm-tree:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/asm/asm-tree/3.0/asm-tree-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_asm:asm:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/asm/asm/3.0/asm-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_classworlds:classworlds:1.1-alpha-2.classpath">
+    <pathelement location="${path.variable.maven_repository}/classworlds/classworlds/1.1-alpha-2/classworlds-1.1-alpha-2.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.intellij:forms_rt:7.0.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/intellij/forms_rt/7.0.3/forms_rt-7.0.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.intellij:javac2:7.0.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/intellij/javac2/7.0.3/javac2-7.0.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.jgoodies:forms:1.1-preview.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/jgoodies/forms/1.1-preview/forms-1.1-preview.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.nsx:nsx-policy-java-sdk:2.2.0.0.0.15184434.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/nsx/nsx-policy-java-sdk/2.2.0.0.0.15184434/nsx-policy-java-sdk-2.2.0.0.0.15184434.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.nsx:vmc-app-java-sdk:2.2.0.0.0.15184434.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/nsx/vmc-app-java-sdk/2.2.0.0.0.15184434/vmc-app-java-sdk-2.2.0.0.0.15184434.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.sso:ssoclient:6.7.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/sso/ssoclient/6.7.0/ssoclient-6.7.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vapi:vapi-authentication:2.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vapi/vapi-authentication/2.9.0/vapi-authentication-2.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vapi:vapi-runtime:2.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vapi/vapi-runtime/2.9.0/vapi-runtime-2.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vapi:vapi-samltoken:2.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vapi/vapi-samltoken/2.9.0/vapi-samltoken-2.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vim25:vim25:6.7.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vim25/vim25/6.7.0/vim25-6.7.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vmc:vmc-bindings:1.3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vmc/vmc-bindings/1.3.0/vmc-bindings-1.3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vmc:vmc-sdk-common:1.3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vmc/vmc-sdk-common/1.3.0/vmc-sdk-common-1.3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware.vsphereautomation.lookup:vsphereautomation-lookupservice:1.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vsphereautomation/lookup/vsphereautomation-lookupservice/1.0.0/vsphereautomation-lookupservice-1.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware:vijava:5.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vijava/5.1/vijava-5.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.vmware:vsphereautomation-client-sdk:1.4.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/vmware/vsphereautomation-client-sdk/1.4.0/vsphereautomation-client-sdk-1.4.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-codec:commons-codec:1.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-io:commons-io:2.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-io/commons-io/2.5/commons-io-2.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_dom4j:dom4j:1.6.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_jdom:jdom:1.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/jdom/jdom/1.0/jdom-1.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_junit:junit:3.8.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/junit/junit/3.8.1/junit-3.8.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.ant:ant-launcher:1.7.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/ant/ant-launcher/1.7.0/ant-launcher-1.7.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.ant:ant:1.7.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/ant/ant/1.7.0/ant-1.7.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.commons:commons-compress:1.11.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/commons/commons-compress/1.11/commons-compress-1.11.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.plugins:maven-assembly-plugin:maven-plugin:3.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/plugins/maven-assembly-plugin/3.0.0/maven-assembly-plugin-3.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:file-management:3.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/file-management/3.0.0/file-management-3.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:maven-artifact-transfer:0.9.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/maven-artifact-transfer/0.9.0/maven-artifact-transfer-0.9.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:maven-common-artifact-filters:3.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/maven-common-artifact-filters/3.0.1/maven-common-artifact-filters-3.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:maven-filtering:3.1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/maven-filtering/3.1.1/maven-filtering-3.1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:maven-shared-io:3.0.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/maven-shared-io/3.0.0/maven-shared-io-3.0.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.shared:maven-shared-utils:3.1.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/shared/maven-shared-utils/3.1.0/maven-shared-utils-3.1.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven.wagon:wagon-provider-api:1.0-alpha-5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/wagon/wagon-provider-api/1.0-alpha-5/wagon-provider-api-1.0-alpha-5.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-aether-provider:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-aether-provider/3.0/maven-aether-provider-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-archiver:3.1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-archiver/3.1.1/maven-archiver-3.1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-artifact-manager:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-artifact-manager/2.0.1/maven-artifact-manager-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-artifact:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-artifact/2.0.1/maven-artifact-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-compat:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-compat/3.0/maven-compat-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-core:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-core/3.0/maven-core-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-model-builder:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-model-builder/3.0/maven-model-builder-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-model:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-model/2.0.1/maven-model-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-plugin-api:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-plugin-api/3.0/maven-plugin-api-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-profile:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-profile/2.0.1/maven-profile-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-project:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-project/2.0.1/maven-project-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-repository-metadata:2.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-repository-metadata/2.0.1/maven-repository-metadata-2.0.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-settings-builder:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-settings-builder/3.0/maven-settings-builder-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.maven:maven-settings:3.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/maven/maven-settings/3.0/maven-settings-3.0.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-archiver:3.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-archiver/3.4/plexus-archiver-3.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-classworlds:2.2.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-classworlds/2.2.3/plexus-classworlds-2.2.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-component-annotations:1.5.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-container-default:1.0-alpha-9.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-container-default/1.0-alpha-9/plexus-container-default-1.0-alpha-9.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-interpolation:1.24.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-interpolation/1.24/plexus-interpolation-1.24.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-io:2.7.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-io/2.7.1/plexus-io-2.7.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.plexus:plexus-utils:1.0.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/plexus/plexus-utils/1.0.5/plexus-utils-1.0.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.iq80.snappy:snappy:0.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/iq80/snappy/snappy/0.4/snappy-0.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.slf4j:slf4j-api:1.7.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.aether:aether-api:1.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/aether/aether-api/1.7/aether-api-1.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.aether:aether-impl:1.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/aether/aether-impl/1.7/aether-impl-1.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.aether:aether-spi:1.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/aether/aether-spi/1.7/aether-spi-1.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.aether:aether-util:1.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/aether/aether-util/1.7/aether-util-1.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.plexus:plexus-build-api:0.0.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/plexus/plexus-build-api/0.0.7/plexus-build-api-0.0.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.plexus:plexus-cipher:1.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.plexus:plexus-sec-dispatcher:1.3.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.sisu:sisu-guice:noaop:2.1.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/sisu/sisu-guice/2.1.7/sisu-guice-2.1.7-noaop.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.sisu:sisu-inject-bean:1.4.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/sisu/sisu-inject-bean/1.4.2/sisu-inject-bean-1.4.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.sonatype.sisu:sisu-inject-plexus:1.4.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/sonatype/sisu/sisu-inject-plexus/1.4.2/sisu-inject-plexus-1.4.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.tukaani:xz:1.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/tukaani/xz/1.5/xz-1.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_xml-apis:xml-apis:1.0.b2.classpath">
+    <pathelement location="${path.variable.maven_repository}/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <fileset dir="${javac2.home}">
+      <include name="javac2.jar"/>
+      <include name="jdom.jar"/>
+      <include name="asm-all*.jar"/>
+      <include name="jgoodies-forms.jar"/>
+    </fileset>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/module_vsphere.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.vsphere" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.vsphere" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>
