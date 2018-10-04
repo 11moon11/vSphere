@@ -6,9 +6,12 @@ import com.vmware.vim25.mo.*;
 import gui.GuiHelper;
 import gui.MainWindow.MainGUI;
 
+import javax.annotation.Nullable;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.rmi.RemoteException;
+import java.util.TreeSet;
 
-public class ManagedEntityWrapper {
+public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
     private ManagedEntity me;
     private String type;
     private Type meType;
@@ -33,6 +36,9 @@ public class ManagedEntityWrapper {
                 break;
             case "Folder":
                 meType = Type.FOLDER;
+                break;
+            case "Datacenter":
+                meType = Type.DATACENTER;
                 break;
             default:
                 meType = Type.UNKNOWN;
@@ -112,6 +118,42 @@ public class ManagedEntityWrapper {
         return "";
     }
 
+    /**
+     * If ManagedEntity is a Folder this function will return it's children
+     * @return child items
+     */
+    public ManagedEntityWrapper[] getFolderChildren() {
+        if(meType == Type.FOLDER) {
+            try {
+                ManagedEntity[] mes = ((Folder)me).getChildEntity();
+                ManagedEntityWrapper[] ret = new ManagedEntityWrapper[mes.length];
+                for(int i=0; i<mes.length; i++) {
+                    ret[i] = new ManagedEntityWrapper(mes[i]);
+                }
+
+                return ret;
+            } catch (RemoteException ex) {
+                MainGUI.getInsatnce().setStatusMessage("Failed to retrieve child items of " + getName());
+                GuiHelper.messageBox(ex.toString(), "Failed to retrieve child items of " + getName(), true);
+            }
+        }
+
+        return null;
+    }
+
+    public Folder getDatacenterChildren() {
+        if(meType == Type.DATACENTER) {
+            try {
+                return ((Datacenter)me).getVmFolder();
+            } catch (RemoteException ex) {
+                MainGUI.getInsatnce().setStatusMessage("Failed to retrieve child items of " + getName());
+                GuiHelper.messageBox(ex.toString(), "Failed to retrieve child items of " + getName(), true);
+            }
+        }
+
+        return null;
+    }
+
     /* Not tested yet
     public boolean cloneVM(VirtualMachine vm, String clonedVMName) throws RemoteException {
         if(vm == null) {
@@ -149,6 +191,13 @@ public class ManagedEntityWrapper {
     }
 
     public enum Type {
-        TEMPLATE, VM, FOLDER, UNKNOWN
+        TEMPLATE, VM, FOLDER, DATACENTER, UNKNOWN
+    }
+
+    @Nullable
+    public int compareTo(ManagedEntityWrapper second) {
+        if(second == null) return 1;
+
+        return this.toString().compareTo(second.toString());
     }
 }

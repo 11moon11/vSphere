@@ -5,6 +5,7 @@ import gui.MainWindow.JTreeCreator;
 import com.vmware.vim25.mo.*;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.net.URL;
@@ -55,6 +56,8 @@ public class vSphere {
         // Holds System
         //ManagedEntity[] mesHost = new InventoryNavigator(rootFolder).searchManagedEntities("HostSystem");
 
+        //SearchIndex si = new SearchIndex()
+
         if (si != null) {
             this.connected = true;
         } else {
@@ -88,11 +91,12 @@ public class vSphere {
     /**
      * Acquires directory structure of the Data Center (creates 1 thread per Data Center)
      * @param datacenters DefaultMutableTreeNode that stores the directory structure
+     * @param defaultTreeModel
      * @return Returns running threads
      * @throws RemoteException
      */
-    public ArrayList<JTreeCreator> getFiles(DefaultMutableTreeNode datacenters) throws RemoteException {
-        ArrayList<JTreeCreator> threads = new ArrayList<>();
+    public ArrayList<Thread> getFiles(DefaultMutableTreeNode datacenters, DefaultTreeModel defaultTreeModel) throws RemoteException {
+        ArrayList<Thread> threads = new ArrayList<>();
 
         for(ManagedEntity me : rootFolder.getChildEntity()) {
             if(me != null && me.getMOR().type.equals("Datacenter")) {
@@ -108,9 +112,9 @@ public class vSphere {
 
                 // Retrieve files and folders
                 // Threaded because this process takes a minute :)
-                JTreeCreator jtc = new JTreeCreator(dc.getVmFolder(), entry);
+                JTreeCreator jtc = new JTreeCreator(dc.getVmFolder(), entry, defaultTreeModel);
                 Thread thread = new Thread(jtc);
-                threads.add(jtc);
+                threads.add(thread);
                 thread.start();
             }
         }
@@ -125,7 +129,7 @@ public class vSphere {
     public boolean isConnected() {
         return this.connected;
     }
-    
+
     public void disconnect() {
         si.getServerConnection().logout();
     }

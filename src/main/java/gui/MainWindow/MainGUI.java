@@ -4,6 +4,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
+import com.vmware.vim25.mo.SearchIndex;
 import gui.*;
 import vSphere.*;
 import gui.LoginWindow.*;
@@ -27,7 +28,7 @@ public class MainGUI extends JFrame {
     private DefaultMutableTreeNode fileStructure;
     private ManagedEntityWrapper selectedItem;
     private DefaultTreeModel defaultTreeModel;
-    private ArrayList<JTreeCreator> threads;
+    private ArrayList<Thread> threads;
     private JButton refreshButton;
     private JTree fileExplorer;
 
@@ -54,7 +55,6 @@ public class MainGUI extends JFrame {
         return insatnce;
     }
 
-    //TODO: buffer file structure locally in a file to speed up the process
     //TODO: add images for VMs, Templates and Folders
     private void init() {
         vs = vSphere.getInstance();
@@ -83,6 +83,8 @@ public class MainGUI extends JFrame {
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
+                refreshButton.setEnabled(false);
+                fileExplorer.setEnabled(false);
                 update();
             }
         });
@@ -137,12 +139,13 @@ public class MainGUI extends JFrame {
 
     /**
      * Updates file structure
+     * TODO: (Optional) Only retrieve contents of the folder on click (on demand)
      */
     private void update() {
         setStatusMessage("Status: updating file structure...");
         if (vs != null) {
             try {
-                threads = vs.getFiles(fileStructure);
+                threads = vs.getFiles(fileStructure, defaultTreeModel);
                 new Thread(new WaitUntilDone()).start();
             } catch (RemoteException ex) {
                 GuiHelper.messageBox(ex.toString(), "Refresh failed!", true);
@@ -272,10 +275,9 @@ public class MainGUI extends JFrame {
             refreshButton.setEnabled(false);
             fileExplorer.setEnabled(false);
 
-            // Wait until done
-            while (!vs.isDone(threads)) {
+            for(Thread th : threads) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(200);
+                    th.join();
                 } catch (InterruptedException e) {
                     GuiHelper.messageBox(e.toString(), "Refresh failed!", true);
                     setStatusMessage("Status: failed to updating file structure!");
