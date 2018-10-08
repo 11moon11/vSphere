@@ -2,9 +2,13 @@ package gui.MainWindow.Functionality;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import gui.MainWindow.MainGUI;
+import vSphere.ManagedEntityWrapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class FolderWindow extends JFrame {
     private static FolderWindow instance;
@@ -27,6 +31,22 @@ public class FolderWindow extends JFrame {
 
     private FolderWindow() {
         super();
+        stopButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                ManagedEntityWrapper mew = MainGUI.getInsatnce().getSelectedItem();
+                mew.shutdownVM();
+            }
+        });
+        startButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                ManagedEntityWrapper mew = MainGUI.getInsatnce().getSelectedItem();
+                mew.startVM();
+            }
+        });
     }
 
     {

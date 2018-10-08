@@ -52,36 +52,80 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
 
     /**
      * If ManagedEntity is a VM this function will restart it
+     * If ManagedEntity is a Folder this function will restart all VMs recursively
      */
     public void startVM() {
         if(meType == Type.VM) {
+            String error = "";
+            boolean success;
             try {
                 ((VirtualMachine) me).powerOnVM_Task(null);
+                success = true;
+            } catch (RemoteException ex1) {
+                error = ex1.toString();
+                try {
+                    ((VirtualMachine) me).rebootGuest();
+                    success = true;
+                } catch (RemoteException ex2) {
+                    success = false;
+                    error = ex2.toString();
+                }
+            }
+
+            if(success) {
                 MainGUI.getInsatnce().setStatusMessage(getName() + " is now running");
-            } catch (RemoteException ex) {
+            } else {
                 MainGUI.getInsatnce().setStatusMessage("Failed to start " + getName());
-                GuiHelper.messageBox(ex.toString(), "Failed to start " + getName(), true);
+                GuiHelper.messageBox(error, "Failed to start " + getName(), true);
+            }
+        } else if(meType == Type.FOLDER) {
+            ManagedEntityWrapper[] arr = getFolderChildren();
+            for (ManagedEntityWrapper mew : arr) {
+                mew.startVM();
             }
         }
     }
 
     /**
      * If ManagedEntity is a VM this function will shutdown it
+     * If ManagedEntity is a Folder this function will shutdown all VMs recursively
      */
     public void shutdownVM() {
         if(meType == Type.VM) {
+            String error = "";
+            boolean success;
+
             try {
-                ((VirtualMachine) me).shutdownGuest();
+                ((VirtualMachine) me).powerOffVM_Task();
+                success = true;
+            } catch (RemoteException ex1) {
+                error = ex1.toString();
+                try {
+                    ((VirtualMachine) me).shutdownGuest();
+                    success = true;
+                } catch (RemoteException ex2) {
+                    success = false;
+                    error = ex2.toString();
+                }
+            }
+
+            if(success) {
                 MainGUI.getInsatnce().setStatusMessage(getName() + " is now stopped");
-            } catch (RemoteException ex) {
+            } else {
                 MainGUI.getInsatnce().setStatusMessage("Failed to shutdown " + getName());
-                GuiHelper.messageBox(ex.toString(), "Failed to shutdown " + getName(), true);
+                GuiHelper.messageBox(error, "Failed to shutdown " + getName(), true);
+            }
+        } else if(meType == Type.FOLDER) {
+            ManagedEntityWrapper[] arr = getFolderChildren();
+            for (ManagedEntityWrapper mew : arr) {
+                mew.shutdownVM();
             }
         }
     }
 
     /**
-     * If ManagedEntity is a VM this function will snapshot it
+     * If ManagedEntity is a VM this function will snapshot it.
+     * If ManagedEntity is a Folder this function will snapshot all VMs recursively
      */
     public void snapshotVM(String name, String description) {
         if(meType == Type.VM) {
@@ -93,6 +137,11 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                 GuiHelper.messageBox(ex.toString(), "Failed to snapshot " + getName(), true);
             }
 
+        } else if(meType == Type.FOLDER) {
+            ManagedEntityWrapper[] arr = getFolderChildren();
+            for (ManagedEntityWrapper mew : arr) {
+                mew.snapshotVM(name, description);
+            }
         }
     }
 

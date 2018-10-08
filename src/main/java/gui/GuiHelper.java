@@ -12,6 +12,11 @@ public class GuiHelper {
         JOptionPane.showMessageDialog(null, msg, title, option);
     }
 
+    public static String requestString(String title, String message) {
+        JFrame frame = new JFrame(title);
+        return JOptionPane.showInputDialog(frame, message, title, JOptionPane.WARNING_MESSAGE);
+    }
+
     public static void centerJFrame(JFrame frame) {
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);

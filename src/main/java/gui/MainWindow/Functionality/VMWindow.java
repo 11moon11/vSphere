@@ -2,6 +2,7 @@ package gui.MainWindow.Functionality;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import gui.GuiHelper;
 import vSphere.ManagedEntityWrapper;
 import gui.MainWindow.MainGUI;
 
@@ -10,8 +11,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- *  Singleton class, responsible for performing all essential functions
- *  for managing Virtual Machines
+ * Singleton class, responsible for performing all essential functions
+ * for managing Virtual Machines
  */
 public class VMWindow extends JFrame {
     private static VMWindow instance;
@@ -62,8 +63,12 @@ public class VMWindow extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
                 ManagedEntityWrapper mew = MainGUI.getInsatnce().getSelectedItem();
-                mew.snapshotVM("", "");
-                updateInfo(mew);
+                String name = GuiHelper.requestString("Snapshot name required", "Please enter snapshot name: ");
+
+                if (name != null) {
+                    mew.snapshotVM(name, "");
+                    updateInfo(mew);
+                }
             }
         });
         refreshButton.addMouseListener(new MouseAdapter() {

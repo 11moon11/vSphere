@@ -60,10 +60,6 @@ public class MainGUI extends JFrame {
         vs = vSphere.getInstance();
         GuiHelper.centerJFrame(this);
 
-        fileStructure = new DefaultMutableTreeNode(new ManagedEntityWrapper(vs.getRootFolder()));
-        defaultTreeModel = new DefaultTreeModel(fileStructure);
-        fileExplorer.setModel(defaultTreeModel);
-
         //TODO: replace functionality panel depending on what item is selected
         functionality.add(FolderWindow.getInstance().getPanel(), new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         update();
@@ -139,9 +135,12 @@ public class MainGUI extends JFrame {
 
     /**
      * Updates file structure
-     * TODO: (Optional) Only retrieve contents of the folder on click (on demand)
      */
     private void update() {
+        fileStructure = new DefaultMutableTreeNode(new ManagedEntityWrapper(vs.getRootFolder()));
+        defaultTreeModel = new DefaultTreeModel(fileStructure);
+        fileExplorer.setModel(defaultTreeModel);
+
         setStatusMessage("Status: updating file structure...");
         if (vs != null) {
             try {
@@ -275,7 +274,7 @@ public class MainGUI extends JFrame {
             refreshButton.setEnabled(false);
             fileExplorer.setEnabled(false);
 
-            for(Thread th : threads) {
+            for (Thread th : threads) {
                 try {
                     th.join();
                 } catch (InterruptedException e) {
