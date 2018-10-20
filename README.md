@@ -9,4 +9,5 @@ Utility for easy vSphere managment
 * mvn install
 
 <b>Run:</b>
-* java -jar ./target/vSphere-1.0-SNAPSHOT.jar
+* mvn exec:java
+* (alternative way) java -jar ./target/vSphere-1.0-SNAPSHOT.jar (may not work)
