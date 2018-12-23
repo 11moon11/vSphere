@@ -1,15 +1,16 @@
 package vSphere;
 
+import com.vmware.vim25.VirtualMachineCloneSpec;
 import com.vmware.vim25.VirtualMachineConfigInfo;
 import com.vmware.vim25.VirtualMachinePowerState;
+import com.vmware.vim25.VirtualMachineRelocateSpec;
 import com.vmware.vim25.mo.*;
 import gui.GuiHelper;
 import gui.MainWindow.MainGUI;
 
 import javax.annotation.Nullable;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.rmi.RemoteException;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
     private ManagedEntity me;
@@ -203,29 +204,43 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         return null;
     }
 
-    /* Not tested yet
-    public boolean cloneVM(VirtualMachine vm, String clonedVMName) throws RemoteException {
-        if(vm == null) {
-            return false;
+    //Not tested yet
+    public boolean cloneVM(ManagedEntityWrapper parentFolder) throws RemoteException {
+        if(meType == Type.TEMPLATE) {
+            ArrayList<ResourcePool> resourcePools = vSphere.getInstance().getResourcePools();
+            if(resourcePools == null || resourcePools.size() == 0)  {
+                System.out.println("No resource pools found!!");
+                return false;
+            }
+
+            VirtualMachineCloneSpec cloneSpec = new VirtualMachineCloneSpec();
+            VirtualMachineRelocateSpec relocateSpec = new VirtualMachineRelocateSpec();
+            //cloneSpec.template = false;
+
+            //TODO: allow user to select resource pool
+            relocateSpec.setPool(resourcePools.get(0).getMOR());
+            //relocateSpec.setHost();
+            cloneSpec.setLocation(relocateSpec);
+            cloneSpec.setPowerOn(false);
+            cloneSpec.setTemplate(false);
+
+
+            Task task = ((VirtualMachine)me).cloneVM_Task((Folder)parentFolder.me, getName(), cloneSpec);
+
+            String status = "";
+            try {
+                status = task.waitForTask();
+            } catch(InterruptedException iex) {
+                System.out.println("Waiting for task got interrupted");
+                iex.printStackTrace();
+            }
+
+            return status.equals(Task.SUCCESS);
+
         }
 
-        VirtualMachineCloneSpec cloneSpec = new VirtualMachineCloneSpec();
-        cloneSpec.setLocation(new VirtualMachineRelocateSpec());
-        cloneSpec.setPowerOn(false);
-        cloneSpec.setTemplate(false);
-
-        Task task = vm.cloneVM_Task((Folder) vm.getParent(), clonedVMName, cloneSpec);
-
-        String status = task.waitForMe();
-
-        if(status != Task.SUCCESS) {
-            return false;
-        }
-
-        //vmCount++;
-
-        return true;
-    } */
+        return false;
+    }
 
     public Type type() {
         return meType;

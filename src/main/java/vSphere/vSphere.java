@@ -18,6 +18,8 @@ public class vSphere {
     private Folder rootFolder;
     private boolean connected;
 
+    private ArrayList<ResourcePool> resourcePools;
+
     public static vSphere getInstance() {
         return instance;
     }
@@ -50,6 +52,12 @@ public class vSphere {
         rootFolder = si.getRootFolder();
         System.out.println("Root folder: " + rootFolder.getName());
 
+        resourcePools = new ArrayList<>();
+        ManagedEntity[] rps = new InventoryNavigator(rootFolder).searchManagedEntities("ResourcePool");
+        for (ManagedEntity rp : rps) {
+            resourcePools.add((ResourcePool) rp);
+        }
+
         // Get all virtual machine and host objects
         // Holds Virtual Machine objects
         //ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
@@ -67,6 +75,10 @@ public class vSphere {
 
     public Folder getRootFolder() {
         return rootFolder;
+    }
+
+    public ArrayList<ResourcePool> getResourcePools() {
+        return resourcePools;
     }
 
     /**

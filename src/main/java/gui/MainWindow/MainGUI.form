@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.MainWindow.MainGUI">
-  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="1118" height="487"/>
+      <xy x="20" y="20" width="1146" height="480"/>
     </constraints>
     <properties>
       <font size="14"/>
@@ -12,133 +12,181 @@
       <font size="14"/>
     </border>
     <children>
-      <scrollpane id="452c4">
+      <tabbedpane id="5ef93" binding="tabbedPane1" default-binding="true">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <minimum-size width="450" height="-1"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="200" height="200"/>
           </grid>
         </constraints>
-        <properties>
-          <font size="14"/>
-        </properties>
+        <properties/>
         <border type="none"/>
         <children>
-          <component id="8c450" class="javax.swing.JTree" binding="fileExplorer">
-            <constraints/>
-            <properties>
-              <dropMode value="ON"/>
-              <editable value="false"/>
-              <enabled value="true"/>
-              <font size="14"/>
-              <rootVisible value="true"/>
-              <showsRootHandles value="false"/>
-            </properties>
-            <clientProperties>
-              <JTree.lineStyle class="java.lang.String" value=""/>
-            </clientProperties>
-          </component>
-        </children>
-      </scrollpane>
-      <component id="a127" class="javax.swing.JButton" binding="refreshButton" default-binding="true">
-        <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <font size="14"/>
-          <icon value="gtk_refresh.png"/>
-          <text value=""/>
-        </properties>
-      </component>
-      <grid id="5559b" binding="description" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
-        <constraints>
-          <grid row="0" column="1" row-span="3" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <minimum-size width="650" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <font size="14"/>
-          <toolTipText value=""/>
-        </properties>
-        <border type="etched" title="Properties &amp; Actions" title-justification="1" title-position="2">
-          <font size="14"/>
-          <title-color color="-16777216"/>
-        </border>
-        <children>
-          <grid id="4a9eb" binding="details" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="17255" binding="folder_view" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <tabbedpane title="Folder View"/>
             </constraints>
-            <properties>
-              <font size="14"/>
-            </properties>
-            <border type="etched" title="Details:"/>
+            <properties/>
+            <border type="none"/>
             <children>
-              <component id="6ff65" class="javax.swing.JLabel" binding="file_name">
+              <grid id="96f0e" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <font size="14"/>
-                  <text value="File name:"/>
+                  <font/>
                 </properties>
-              </component>
-              <component id="4b937" class="javax.swing.JLabel" binding="file_type">
+                <border type="none"/>
+                <children>
+                  <scrollpane id="452c4">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <minimum-size width="450" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="8c450" class="javax.swing.JTree" binding="fileExplorer">
+                        <constraints/>
+                        <properties>
+                          <dropMode value="ON"/>
+                          <editable value="false"/>
+                          <enabled value="true"/>
+                          <font size="14"/>
+                          <rootVisible value="true"/>
+                          <showsRootHandles value="true"/>
+                        </properties>
+                        <clientProperties>
+                          <JTree.lineStyle class="java.lang.String" value=""/>
+                        </clientProperties>
+                      </component>
+                    </children>
+                  </scrollpane>
+                  <component id="a127" class="javax.swing.JButton" binding="refreshButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <font/>
+                      <icon value="gtk_refresh.png"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                  <grid id="5559b" binding="description" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <grid row="0" column="1" row-span="3" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <minimum-size width="650" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font/>
+                      <toolTipText value=""/>
+                    </properties>
+                    <border type="etched" title="Properties &amp; Actions" title-justification="1" title-position="2">
+                      <font size="14"/>
+                      <title-color color="-16777216"/>
+                    </border>
+                    <children>
+                      <grid id="4a9eb" binding="details" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <font size="14"/>
+                        </properties>
+                        <border type="etched" title="Details:"/>
+                        <children>
+                          <component id="6ff65" class="javax.swing.JLabel" binding="file_name">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font size="14"/>
+                              <text value="File name:"/>
+                            </properties>
+                          </component>
+                          <component id="4b937" class="javax.swing.JLabel" binding="file_type">
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font size="14"/>
+                              <text value="File type:"/>
+                            </properties>
+                          </component>
+                          <component id="55aff" class="javax.swing.JLabel" binding="file_location">
+                            <constraints>
+                              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font size="14"/>
+                              <text value="File location:"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="b6b5e" binding="functionality" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
+                        <constraints>
+                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <font size="14"/>
+                        </properties>
+                        <border type="etched" title="Additional functionality:"/>
+                        <children/>
+                      </grid>
+                      <vspacer id="11962">
+                        <constraints>
+                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="2" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </vspacer>
+                      <vspacer id="37122">
+                        <constraints>
+                          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </vspacer>
+                    </children>
+                  </grid>
+                  <component id="955ac" class="javax.swing.JTextField" binding="status">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <editable value="false"/>
+                      <enabled value="true"/>
+                      <font/>
+                      <text value="Status:"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <hspacer id="455c3">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties>
-                  <font size="14"/>
-                  <text value="File type:"/>
-                </properties>
-              </component>
-              <component id="55aff" class="javax.swing.JLabel" binding="file_location">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font size="14"/>
-                  <text value="File location:"/>
-                </properties>
-              </component>
+              </hspacer>
             </children>
           </grid>
-          <grid id="b6b5e" binding="functionality" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="3b33" binding="network_view" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <tabbedpane title="Network View"/>
             </constraints>
-            <properties>
-              <font size="14"/>
-            </properties>
-            <border type="etched" title="Additional functionality:"/>
+            <properties/>
+            <border type="none"/>
             <children/>
           </grid>
-          <vspacer id="11962">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="2" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </vspacer>
-          <vspacer id="37122">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </vspacer>
         </children>
-      </grid>
-      <component id="955ac" class="javax.swing.JTextField" binding="status">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <enabled value="true"/>
-          <text value="Status:"/>
-        </properties>
-      </component>
+      </tabbedpane>
     </children>
   </grid>
 </form>

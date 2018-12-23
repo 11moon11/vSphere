@@ -2,9 +2,12 @@ package gui.MainWindow.Functionality;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import gui.MainWindow.MainGUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TemplateWindow extends JFrame {
     private static TemplateWindow instance;
@@ -25,6 +28,16 @@ public class TemplateWindow extends JFrame {
 
     private TemplateWindow() {
         super();
+
+        setupButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+
+                SelectTargetFolders stf = new SelectTargetFolders(MainGUI.getInsatnce().selectedItem);
+                stf.setVisible(true);
+            }
+        });
     }
 
     {
