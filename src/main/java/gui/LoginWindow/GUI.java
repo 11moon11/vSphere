@@ -90,8 +90,8 @@ public class GUI extends JFrame {
                 passwordField1.setText("");
             }
         } catch (Exception ex) { // In case something goes wrong
+            ex.printStackTrace();
             GuiHelper.messageBox(ex.toString(), "Connection failed!", true);
-            System.out.println(ex.toString());
         }
     }
 

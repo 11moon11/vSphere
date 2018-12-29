@@ -4,7 +4,6 @@ import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
-import com.vmware.vim25.mo.SearchIndex;
 import gui.*;
 import vSphere.*;
 import gui.LoginWindow.*;
@@ -19,15 +18,14 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.*;
 import java.rmi.*;
-import java.util.concurrent.TimeUnit;
 
 
 public class MainGUI extends JFrame {
     private static MainGUI insatnce;
-
+    public DefaultTreeModel defaultTreeModel, defaultNetworkTreeModel;
     private DefaultMutableTreeNode fileStructure;
     public ManagedEntityWrapper selectedItem;
-    public DefaultTreeModel defaultTreeModel;
+    private DefaultListModel<ManagedEntityWrapper> NotNetworkedListModel;
     private ArrayList<Thread> threads;
     private JButton refreshButton;
     private JTree fileExplorer;
@@ -43,6 +41,12 @@ public class MainGUI extends JFrame {
     private JTabbedPane tabbedPane1;
     private JPanel folder_view;
     private JPanel network_view;
+    private JScrollPane not_networked_view;
+    private JScrollPane networked_view;
+    private JTree network_tree;
+    private JList<ManagedEntityWrapper> not_networked_list;
+    private JButton set_network;
+    private JButton unset_network;
     private vSphere vs;
 
     public static MainGUI getInsatnce() {
@@ -62,9 +66,10 @@ public class MainGUI extends JFrame {
     private void init() {
         vs = vSphere.getInstance();
         GuiHelper.centerJFrame(this);
+        not_networked_list.setModel(new DefaultListModel<>());
 
         functionality.add(FolderWindow.getInstance().getPanel(), new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        update();
+        updateTree();
 
         if (vs == null) {
             GuiHelper.messageBox("Failed to obtain vSphere.vSphere instance", "Initialization Error", false);
@@ -84,7 +89,7 @@ public class MainGUI extends JFrame {
                 super.mouseReleased(e);
                 refreshButton.setEnabled(false);
                 fileExplorer.setEnabled(false);
-                update();
+                updateTree();
             }
         });
 
@@ -139,7 +144,7 @@ public class MainGUI extends JFrame {
     /**
      * Updates file structure
      */
-    private void update() {
+    public void updateTree() {
         fileStructure = new DefaultMutableTreeNode(new ManagedEntityWrapper(vs.getRootFolder()));
         defaultTreeModel = new DefaultTreeModel(fileStructure);
         fileExplorer.setModel(defaultTreeModel);
@@ -153,6 +158,16 @@ public class MainGUI extends JFrame {
                 GuiHelper.messageBox(ex.toString(), "Refresh failed!", true);
             }
         }
+    }
+
+    void updateNetworkViewCallback(DefaultTreeModel dtm) {
+        defaultNetworkTreeModel = dtm;
+        network_tree.setModel(dtm);
+    }
+
+    void updateNotNetworkedViewCallback(DefaultListModel<ManagedEntityWrapper> dlm) {
+        NotNetworkedListModel = dlm;
+        not_networked_list.setModel(dlm);
     }
 
     /**
@@ -181,7 +196,7 @@ public class MainGUI extends JFrame {
         final JScrollPane scrollPane1 = new JScrollPane();
         Font scrollPane1Font = this.$$$getFont$$$(null, -1, -1, scrollPane1.getFont());
         if (scrollPane1Font != null) scrollPane1.setFont(scrollPane1Font);
-        panel2.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(450, -1), null, null, 0, false));
+        panel2.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(450, 600), null, null, 0, false));
         fileExplorer = new JTree();
         fileExplorer.setDropMode(DropMode.ON);
         fileExplorer.setEditable(false);
@@ -246,8 +261,31 @@ public class MainGUI extends JFrame {
         final Spacer spacer3 = new Spacer();
         folder_view.add(spacer3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         network_view = new JPanel();
-        network_view.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        network_view.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPane1.addTab("Network View", network_view);
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(4, 3, new Insets(0, 0, 0, 0), -1, -1));
+        network_view.add(panel3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        networked_view = new JScrollPane();
+        panel3.add(networked_view, new GridConstraints(0, 2, 4, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        networked_view.setBorder(BorderFactory.createTitledBorder("Network view:"));
+        network_tree = new JTree();
+        networked_view.setViewportView(network_tree);
+        not_networked_view = new JScrollPane();
+        panel3.add(not_networked_view, new GridConstraints(0, 0, 4, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        not_networked_view.setBorder(BorderFactory.createTitledBorder("Not newtworked VMs"));
+        not_networked_list = new JList();
+        not_networked_view.setViewportView(not_networked_list);
+        set_network = new JButton();
+        set_network.setText("->");
+        panel3.add(set_network, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        unset_network = new JButton();
+        unset_network.setText("<-");
+        panel3.add(unset_network, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer4 = new Spacer();
+        panel3.add(spacer4, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 1, false));
+        final Spacer spacer5 = new Spacer();
+        panel3.add(spacer5, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
     }
 
     /**

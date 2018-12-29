@@ -14,9 +14,14 @@ import java.util.*;
 public class vSphere {
     private static vSphere instance;
     private ServiceInstance si;
+    private HostSystem hs;
 
     private Folder rootFolder;
     private boolean connected;
+
+    public static HashMap<String, ManagedEntityWrapper> VirtualMachinesMewMap, FolderMewMap;
+    public static HashMap<String, VirtualMachine> VirtualMachinesMap;
+    public static HashMap<String, Folder> FolderMap;
 
     private ArrayList<ResourcePool> resourcePools;
 
@@ -57,6 +62,33 @@ public class vSphere {
         for (ManagedEntity rp : rps) {
             resourcePools.add((ResourcePool) rp);
         }
+
+        ManagedEntity[] hosts = new InventoryNavigator(rootFolder).searchManagedEntities("HostSystem");
+        if(hosts != null && hosts.length > 0) {
+            hs = (HostSystem) hosts[0];
+        }
+
+        System.out.print("Indexing VMs...");
+        VirtualMachinesMewMap = new HashMap<>();
+        VirtualMachinesMap = new HashMap<>();
+        ManagedEntity[] vmsMe = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
+        for(ManagedEntity vmMe : vmsMe) {
+            String key = vmMe.toString();
+            VirtualMachinesMewMap.put(key, new ManagedEntityWrapper(vmMe));
+            VirtualMachinesMap.put(key, (VirtualMachine)vmMe);
+        }
+        System.out.println("Done!");
+
+        System.out.print("Indexing Folders...");
+        FolderMewMap = new HashMap<>();
+        FolderMap = new HashMap<>();
+        ManagedEntity[] foldersMe = new InventoryNavigator(rootFolder).searchManagedEntities("Folder");
+        for(ManagedEntity folderMe : foldersMe) {
+            String key = folderMe.toString();
+            FolderMewMap.put(key, new ManagedEntityWrapper(folderMe));
+            FolderMap.put(key, (Folder)folderMe);
+        }
+        System.out.println("Done!");
 
         // Get all virtual machine and host objects
         // Holds Virtual Machine objects
@@ -144,5 +176,9 @@ public class vSphere {
 
     public void disconnect() {
         si.getServerConnection().logout();
+    }
+
+    public HostSystem getHostSystem() {
+        return hs;
     }
 }

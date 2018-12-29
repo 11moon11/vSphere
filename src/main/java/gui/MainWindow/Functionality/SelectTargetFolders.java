@@ -3,8 +3,12 @@ package gui.MainWindow.Functionality;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import com.vmware.vim25.mo.ManagedEntity;
+import com.vmware.vim25.mo.VirtualMachine;
+import gui.GuiHelper;
 import gui.MainWindow.MainGUI;
 import vSphere.ManagedEntityWrapper;
+import vSphere.vSphere;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,9 +17,11 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 
 public class SelectTargetFolders extends JFrame {
     private ManagedEntityWrapper selectedItem;
+    private HashMap<String, DefaultMutableTreeNode> selectedItems;
 
     private JTree folderSlection;
     private JPanel panel1;
@@ -23,6 +29,7 @@ public class SelectTargetFolders extends JFrame {
     private JList<ManagedEntityWrapper> selectedFolders;
     private JButton selectFolder;
 
+    //TODO: add functionality for user to deselect (remove from the target folders)
     SelectTargetFolders(ManagedEntityWrapper selectedTemplate) {
         super("Please select destination folders");
         $$$setupUI$$$();
@@ -30,6 +37,9 @@ public class SelectTargetFolders extends JFrame {
         setContentPane(panel1);
         pack();
 
+        GuiHelper.centerJFrame(this);
+
+        selectedItems = new HashMap<>();
         selectedFolders.setModel(new DefaultListModel<>());
         folderSlection.setModel(MainGUI.getInsatnce().defaultTreeModel);
 
@@ -41,12 +51,24 @@ public class SelectTargetFolders extends JFrame {
                 for (int i = 0; i < selectedFolders.getModel().getSize(); i++) {
                     try {
                         selectedTemplate.cloneVM(((DefaultListModel<ManagedEntityWrapper>) selectedFolders.getModel()).get(i));
+                        try {
+                            for(ManagedEntity me : vSphere.FolderMap.get(((DefaultListModel<ManagedEntityWrapper>) selectedFolders.getModel()).get(i).meKey).getChildEntity()) {
+                                if(me.getMOR().type.equals("VirtualMachine")) {
+                                    vSphere.VirtualMachinesMap.putIfAbsent(me.toString(), (VirtualMachine)me);
+                                    vSphere.VirtualMachinesMewMap.putIfAbsent(me.toString(), new ManagedEntityWrapper(me));
+                                    vSphere.FolderMewMap.get(me.getParent().toString()).meChildrenKey.add(me.toString());
+                                }
+                            }
+                        } catch (RemoteException e1) {
+                            e1.printStackTrace();
+                        }
                     } catch (RemoteException e1) {
                         System.out.println("Failed to clone selected VM");
                         e1.printStackTrace();
                     }
                 }
 
+                MainGUI.getInsatnce().updateTree();
                 hideMe();
             }
         });
