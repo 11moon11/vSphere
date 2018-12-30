@@ -106,24 +106,29 @@ public class JTreeCreator implements Runnable {
             MainGUI.getInsatnce().updateNotNetworkedViewCallback(notNetworkedVMsList);
 
             // Populate networked vms tree
+            //TODO: display VM adaptors instead of vms (so, if a VM has more than 1 network adaptor -> display it twice)
             MainGUI.getInsatnce().setStatusMessage("Status: Updating tree of networked devices (this one takes a minute)...");
             HostSystem hs = vSphere.getInstance().getHostSystem();
             DefaultMutableTreeNode networkStructure = new DefaultMutableTreeNode(new ManagedEntityWrapper(hs));
             DefaultTreeModel defaultTreeModelNetwork = new DefaultTreeModel(networkStructure);
-            try {
-                for(Network networkName : hs.getNetworks()) {
-                    DefaultMutableTreeNode parentNetwork = new DefaultMutableTreeNode(new ManagedEntityWrapper(networkName));
-                    networkStructure.add(parentNetwork);
-                    for(VirtualMachine vm : networkName.getVms()) { //TODO: optimize
-                        parentNetwork.add(new DefaultMutableTreeNode(vSphere.VirtualMachinesMewMap.get(vm.toString())));
+
+            vSphere.NetworkMewMap.forEach((String netName, ManagedEntityWrapper netMew) -> {
+                DefaultMutableTreeNode parentNetwork = new DefaultMutableTreeNode(netMew);
+                networkStructure.add(parentNetwork);
+
+                if(netMew.vmsOfThisNetwork != null) {
+                    for (String netObjectStr : netMew.vmsOfThisNetwork) {
+                        ManagedEntityWrapper netObject = vSphere.VirtualMachinesMewMap.get(netObjectStr);
+                        parentNetwork.add(new DefaultMutableTreeNode(netObject));
                     }
                 }
-                new sortObjects(networkStructure).run();
-            } catch (RemoteException e) {
-                //GuiHelper.messageBox(e.toString(), "Network view refresh failed!", true);
-                e.printStackTrace();
-            }
+            });
+
+            new sortObjects(networkStructure).run();
+
             MainGUI.getInsatnce().updateNetworkViewCallback(defaultTreeModelNetwork);
+
+            MainGUI.getInsatnce().setStatusMessage("Status: file structure for all views has been updated!");
         }
     }
 

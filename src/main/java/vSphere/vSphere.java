@@ -20,7 +20,7 @@ public class vSphere {
     private Folder rootFolder;
     private boolean connected;
 
-    public static HashMap<String, ManagedEntityWrapper> VirtualMachinesMewMap, FolderMewMap;
+    public static HashMap<String, ManagedEntityWrapper> VirtualMachinesMewMap, FolderMewMap, NetworkMewMap;
     public static HashMap<String, VirtualMachine> VirtualMachinesMap;
     public static HashMap<String, String> PortGroupMap;
     public static HashMap<String, Folder> FolderMap;
@@ -76,6 +76,14 @@ public class vSphere {
         }
 
         DistributedVirtualPortgroup dvp = searchForPortgroup("dvPG-CIG-Blue-Train01-LAN");
+
+        System.out.print("Indexing Networks...");
+        NetworkMewMap = new HashMap<>();
+        for(Network networkName : hs.getNetworks()) {
+            String key = networkName.toString();
+            NetworkMewMap.put(key, new ManagedEntityWrapper(networkName));
+        }
+        System.out.println("Done!");
 
         System.out.print("Indexing Folders...");
         FolderMewMap = new HashMap<>();

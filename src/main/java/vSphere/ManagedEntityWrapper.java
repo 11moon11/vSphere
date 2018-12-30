@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
-    public HashSet<String> meChildrenKey;
+    public HashSet<String> meChildrenKey, vmsOfThisNetwork;
     public String meKey, meParentKey;
     public boolean isNetworked;
     private boolean fullPath;
@@ -82,6 +82,10 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                     nets = vm.getNetworks();
                     if(nets == null || nets.length == 0) {
                         isNetworked = false;
+                    } else {
+                        for(Network n : nets) {
+                            vSphere.NetworkMewMap.get(n.toString()).vmsOfThisNetwork.add(meKey);
+                        }
                     }
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
@@ -111,6 +115,7 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                 meType = Type.HOSTSYSTEM;
                 break;
             case "DistributedVirtualPortgroup":
+                vmsOfThisNetwork = new HashSet<>();
                 meType = Type.NETWORK;
                 break;
             default:
@@ -397,9 +402,59 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         }
     }
 
-    //TODO: implement
-    public boolean deAssignFromNetwork(String networkName) {
+    public boolean unAssignFromNetwork(String networkName) {
+        if(meType == Type.VM) {
+            System.out.println("Attempting to un assign `" + getName() + "` from network `" + networkName + "`");
 
+            VirtualMachine vm = vSphere.VirtualMachinesMap.get(meKey);
+            boolean success = false;
+
+            VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
+            VirtualDeviceConfigSpec nicSpec = new VirtualDeviceConfigSpec();
+            nicSpec.setOperation(VirtualDeviceConfigSpecOperation.remove);
+
+            VirtualEthernetCard vec = getNicFromNetName(networkName);
+            if(vec == null) {
+                System.out.println("Failed to find Ethernet card with selected network name");
+                return false;
+            }
+            nicSpec.setDevice(vec);
+
+            System.out.println("Removing adapter: " + vec.getBacking().toString());
+
+            vmConfigSpec.setDeviceChange(new VirtualDeviceConfigSpec []{nicSpec});
+            String status = "";
+            try {
+                Task task = vm.reconfigVM_Task(vmConfigSpec);
+                status = task.waitForTask();
+                success = status.equals(Task.SUCCESS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if(success) {
+                System.out.println("Successfully unassigned VM from selected network!");
+
+                for(Network n : nets) { // remove us from all adaptors
+                    vSphere.NetworkMewMap.get(n.toString()).vmsOfThisNetwork.remove(meKey);
+                }
+
+                try {
+                    nets = vm.getNetworks();
+                    isNetworked = nets != null && nets.length != 0;
+                    ManagedEntityWrapper mewVMOrigin = vSphere.VirtualMachinesMewMap.get(meKey);
+                    mewVMOrigin.isNetworked = isNetworked;
+                    mewVMOrigin.nets = nets;
+                    for(Network n : nets) { // make sure we are still visible for other adaptors
+                        vSphere.NetworkMewMap.get(n.toString()).vmsOfThisNetwork.add(meKey);
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return success;
+        }
 
         return false;
     }
@@ -487,6 +542,9 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                     ManagedEntityWrapper mewVMOrigin = vSphere.VirtualMachinesMewMap.get(meKey);
                     mewVMOrigin.isNetworked = isNetworked;
                     mewVMOrigin.nets = nets;
+                    for(Network n : nets) {
+                        vSphere.NetworkMewMap.get(n.toString()).vmsOfThisNetwork.add(meKey);
+                    }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

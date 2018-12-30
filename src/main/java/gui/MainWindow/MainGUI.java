@@ -71,8 +71,10 @@ public class MainGUI extends JFrame {
         not_networked_list.setModel(new DefaultListModel<>());
         network_tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
 
+        if (threads == null) {
+            updateTree();
+        }
         functionality.add(FolderWindow.getInstance().getPanel(), new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        updateTree();
 
         if (vs == null) {
             GuiHelper.messageBox("Failed to obtain vSphere.vSphere instance", "Initialization Error", false);
@@ -134,6 +136,7 @@ public class MainGUI extends JFrame {
                 functionality.add(panel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
             }
         });
+
         set_network.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -150,13 +153,10 @@ public class MainGUI extends JFrame {
                 } else if (si.type() == ManagedEntityWrapper.Type.VM) {
                     DefaultMutableTreeNode parentNetwork = (DefaultMutableTreeNode) selected_node_destination.getParent();
                     if (parentNetwork == null) return;
-                    si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
+                    si = (ManagedEntityWrapper) parentNetwork.getUserObject();
                     if (si == null) return;
 
                     networkName = si.getName();
-
-                    //si.getNicInfo();
-                    //si.removeAllNetworkAdapters();
                 } else {
                     return;
                 }
@@ -167,12 +167,13 @@ public class MainGUI extends JFrame {
                 if (si == null) return;
 
                 if (si.assignToNetwork(networkName)) {
-                    MainGUI.getInsatnce().setStatusMessage("Status: Successfully assigned VM to selected network!");
+                    MainGUI.getInsatnce().setStatusMessage("Status: Successfully assigned VM to the selected network!");
                     ((DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel()).remove(not_networked_list.getSelectedIndex());
                     updateTree();
                 }
             }
         });
+
         unset_network.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -183,27 +184,23 @@ public class MainGUI extends JFrame {
                 ManagedEntityWrapper si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
                 if (si == null) return;
 
-                //DefaultListModel<ManagedEntityWrapper> selected_node = (DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel();
-                //if (selected_node == null) return;
-                //si = not_networked_list.getSelectedValue();
-                //if (si == null) return;
-
                 String networkName;
                 if (si.type() == ManagedEntityWrapper.Type.NETWORK) {
-                    networkName = si.getName();
+                    return;
                 } else if (si.type() == ManagedEntityWrapper.Type.VM) {
                     DefaultMutableTreeNode parentNetwork = (DefaultMutableTreeNode) selected_node_destination.getParent();
                     if (parentNetwork == null) return;
-                    si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
-                    if (si == null) return;
+                    ManagedEntityWrapper parentMew = (ManagedEntityWrapper) parentNetwork.getUserObject();
+                    if (parentMew == null) return;
 
-                    networkName = si.getName();
+                    networkName = parentMew.getName();
                 } else {
                     return;
                 }
 
-                if (si.deAssignFromNetwork(networkName)) {
-                    //Success
+                if (si.unAssignFromNetwork(networkName)) {
+                    MainGUI.getInsatnce().setStatusMessage("Status: Successfully unassigned VM from the selected network!");
+                    updateTree();
                 }
             }
         });
@@ -398,7 +395,6 @@ public class MainGUI extends JFrame {
             refreshButton.setEnabled(false);
             fileExplorer.setEnabled(false);
 
-            MainGUI.getInsatnce().setStatusMessage("Status: updating file structure...");
             for (Thread th : threads) {
                 try {
                     th.join();
@@ -407,9 +403,6 @@ public class MainGUI extends JFrame {
                     setStatusMessage("Status: failed to updating file structure!");
                 }
             }
-
-            //fileExplorer.updateUI();
-            MainGUI.getInsatnce().setStatusMessage("Status: file structure for all views has been updated!");
 
             // Enable button
             refreshButton.setEnabled(true);
