@@ -4,6 +4,8 @@ import com.intellij.uiDesigner.core.Spacer;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 
+import com.vmware.vim25.VirtualEthernetCardNetworkBackingInfo;
+import com.vmware.vim25.mo.ManagedEntity;
 import gui.*;
 import vSphere.*;
 import gui.LoginWindow.*;
@@ -67,6 +69,7 @@ public class MainGUI extends JFrame {
         vs = vSphere.getInstance();
         GuiHelper.centerJFrame(this);
         not_networked_list.setModel(new DefaultListModel<>());
+        network_tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
 
         functionality.add(FolderWindow.getInstance().getPanel(), new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         updateTree();
@@ -109,7 +112,7 @@ public class MainGUI extends JFrame {
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) fileExplorer.getLastSelectedPathComponent();
                 if (selectedNode == null) return;
-                selectedItem = ((ManagedEntityWrapper) selectedNode.getUserObject());
+                selectedItem = (ManagedEntityWrapper) selectedNode.getUserObject();
                 if (selectedItem == null) return;
 
                 file_name.setText("File name: " + selectedItem.getName());
@@ -131,6 +134,79 @@ public class MainGUI extends JFrame {
                 functionality.add(panel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
             }
         });
+        set_network.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+
+                DefaultMutableTreeNode selected_node_destination = (DefaultMutableTreeNode) network_tree.getLastSelectedPathComponent();
+                if (selected_node_destination == null) return;
+                ManagedEntityWrapper si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
+                if (si == null) return;
+
+                String networkName;
+                if (si.type() == ManagedEntityWrapper.Type.NETWORK) {
+                    networkName = si.getName();
+                } else if (si.type() == ManagedEntityWrapper.Type.VM) {
+                    DefaultMutableTreeNode parentNetwork = (DefaultMutableTreeNode) selected_node_destination.getParent();
+                    if (parentNetwork == null) return;
+                    si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
+                    if (si == null) return;
+
+                    networkName = si.getName();
+
+                    //si.getNicInfo();
+                    //si.removeAllNetworkAdapters();
+                } else {
+                    return;
+                }
+
+                DefaultListModel<ManagedEntityWrapper> selected_node_source = (DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel();
+                if (selected_node_source == null) return;
+                si = not_networked_list.getSelectedValue();
+                if (si == null) return;
+
+                if (si.assignToNetwork(networkName)) {
+                    MainGUI.getInsatnce().setStatusMessage("Status: Successfully assigned VM to selected network!");
+                    ((DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel()).remove(not_networked_list.getSelectedIndex());
+                    updateTree();
+                }
+            }
+        });
+        unset_network.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+
+                DefaultMutableTreeNode selected_node_destination = (DefaultMutableTreeNode) network_tree.getLastSelectedPathComponent();
+                if (selected_node_destination == null) return;
+                ManagedEntityWrapper si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
+                if (si == null) return;
+
+                //DefaultListModel<ManagedEntityWrapper> selected_node = (DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel();
+                //if (selected_node == null) return;
+                //si = not_networked_list.getSelectedValue();
+                //if (si == null) return;
+
+                String networkName;
+                if (si.type() == ManagedEntityWrapper.Type.NETWORK) {
+                    networkName = si.getName();
+                } else if (si.type() == ManagedEntityWrapper.Type.VM) {
+                    DefaultMutableTreeNode parentNetwork = (DefaultMutableTreeNode) selected_node_destination.getParent();
+                    if (parentNetwork == null) return;
+                    si = (ManagedEntityWrapper) selected_node_destination.getUserObject();
+                    if (si == null) return;
+
+                    networkName = si.getName();
+                } else {
+                    return;
+                }
+
+                if (si.deAssignFromNetwork(networkName)) {
+                    //Success
+                }
+            }
+        });
     }
 
     public ManagedEntityWrapper getSelectedItem() {
@@ -149,7 +225,6 @@ public class MainGUI extends JFrame {
         defaultTreeModel = new DefaultTreeModel(fileStructure);
         fileExplorer.setModel(defaultTreeModel);
 
-        setStatusMessage("Status: updating file structure...");
         if (vs != null) {
             try {
                 threads = vs.getFiles(fileStructure, defaultTreeModel);
@@ -166,7 +241,7 @@ public class MainGUI extends JFrame {
     }
 
     void updateNotNetworkedViewCallback(DefaultListModel<ManagedEntityWrapper> dlm) {
-        NotNetworkedListModel = dlm;
+        //NotNetworkedListModel = dlm;
         not_networked_list.setModel(dlm);
     }
 
@@ -179,14 +254,14 @@ public class MainGUI extends JFrame {
      */
     private void $$$setupUI$$$() {
         panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         Font panel1Font = this.$$$getFont$$$(null, -1, 14, panel1.getFont());
         if (panel1Font != null) panel1.setFont(panel1Font);
         panel1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, this.$$$getFont$$$(null, -1, 14, panel1.getFont())));
         tabbedPane1 = new JTabbedPane();
         panel1.add(tabbedPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         folder_view = new JPanel();
-        folder_view.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        folder_view.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPane1.addTab("Folder View", folder_view);
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(3, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -196,7 +271,7 @@ public class MainGUI extends JFrame {
         final JScrollPane scrollPane1 = new JScrollPane();
         Font scrollPane1Font = this.$$$getFont$$$(null, -1, -1, scrollPane1.getFont());
         if (scrollPane1Font != null) scrollPane1.setFont(scrollPane1Font);
-        panel2.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(450, 600), null, null, 0, false));
+        panel2.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(500, 600), null, null, 0, false));
         fileExplorer = new JTree();
         fileExplorer.setDropMode(DropMode.ON);
         fileExplorer.setEditable(false);
@@ -251,15 +326,6 @@ public class MainGUI extends JFrame {
         description.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
         description.add(spacer2, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        status = new JTextField();
-        status.setEditable(false);
-        status.setEnabled(true);
-        Font statusFont = this.$$$getFont$$$(null, -1, -1, status.getFont());
-        if (statusFont != null) status.setFont(statusFont);
-        status.setText("Status:");
-        panel2.add(status, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        folder_view.add(spacer3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         network_view = new JPanel();
         network_view.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPane1.addTab("Network View", network_view);
@@ -279,13 +345,20 @@ public class MainGUI extends JFrame {
         set_network = new JButton();
         set_network.setText("->");
         panel3.add(set_network, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer3 = new Spacer();
+        panel3.add(spacer3, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 1, false));
+        final Spacer spacer4 = new Spacer();
+        panel3.add(spacer4, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         unset_network = new JButton();
         unset_network.setText("<-");
         panel3.add(unset_network, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer4 = new Spacer();
-        panel3.add(spacer4, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 1, false));
-        final Spacer spacer5 = new Spacer();
-        panel3.add(spacer5, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        status = new JTextField();
+        status.setEditable(false);
+        status.setEnabled(true);
+        Font statusFont = this.$$$getFont$$$(null, -1, -1, status.getFont());
+        if (statusFont != null) status.setFont(statusFont);
+        status.setText("Status:");
+        panel1.add(status, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
     }
 
     /**
@@ -325,6 +398,7 @@ public class MainGUI extends JFrame {
             refreshButton.setEnabled(false);
             fileExplorer.setEnabled(false);
 
+            MainGUI.getInsatnce().setStatusMessage("Status: updating file structure...");
             for (Thread th : threads) {
                 try {
                     th.join();
@@ -334,10 +408,8 @@ public class MainGUI extends JFrame {
                 }
             }
 
-            // Update tree view
-            defaultTreeModel.reload();
             //fileExplorer.updateUI();
-            status.setText("Status: file structure updated!");
+            MainGUI.getInsatnce().setStatusMessage("Status: file structure for all views has been updated!");
 
             // Enable button
             refreshButton.setEnabled(true);

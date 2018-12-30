@@ -21,7 +21,6 @@ import java.util.HashMap;
 
 public class SelectTargetFolders extends JFrame {
     private ManagedEntityWrapper selectedItem;
-    private HashMap<String, DefaultMutableTreeNode> selectedItems;
 
     private JTree folderSlection;
     private JPanel panel1;
@@ -39,7 +38,6 @@ public class SelectTargetFolders extends JFrame {
 
         GuiHelper.centerJFrame(this);
 
-        selectedItems = new HashMap<>();
         selectedFolders.setModel(new DefaultListModel<>());
         folderSlection.setModel(MainGUI.getInsatnce().defaultTreeModel);
 
@@ -52,9 +50,9 @@ public class SelectTargetFolders extends JFrame {
                     try {
                         selectedTemplate.cloneVM(((DefaultListModel<ManagedEntityWrapper>) selectedFolders.getModel()).get(i));
                         try {
-                            for(ManagedEntity me : vSphere.FolderMap.get(((DefaultListModel<ManagedEntityWrapper>) selectedFolders.getModel()).get(i).meKey).getChildEntity()) {
-                                if(me.getMOR().type.equals("VirtualMachine")) {
-                                    vSphere.VirtualMachinesMap.putIfAbsent(me.toString(), (VirtualMachine)me);
+                            for (ManagedEntity me : vSphere.FolderMap.get(((DefaultListModel<ManagedEntityWrapper>) selectedFolders.getModel()).get(i).meKey).getChildEntity()) {
+                                if (me.getMOR().type.equals("VirtualMachine")) {
+                                    vSphere.VirtualMachinesMap.putIfAbsent(me.toString(), (VirtualMachine) me);
                                     vSphere.VirtualMachinesMewMap.putIfAbsent(me.toString(), new ManagedEntityWrapper(me));
                                     vSphere.FolderMewMap.get(me.getParent().toString()).meChildrenKey.add(me.toString());
                                 }
@@ -68,6 +66,7 @@ public class SelectTargetFolders extends JFrame {
                     }
                 }
 
+                //TODO: instead of updating the entire tree - only update selected folders
                 MainGUI.getInsatnce().updateTree();
                 hideMe();
             }

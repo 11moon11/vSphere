@@ -1,5 +1,6 @@
 package vSphere;
 
+import com.vmware.vim25.*;
 import gui.MainWindow.JTreeCreator;
 
 import com.vmware.vim25.mo.*;
@@ -21,6 +22,7 @@ public class vSphere {
 
     public static HashMap<String, ManagedEntityWrapper> VirtualMachinesMewMap, FolderMewMap;
     public static HashMap<String, VirtualMachine> VirtualMachinesMap;
+    public static HashMap<String, String> PortGroupMap;
     public static HashMap<String, Folder> FolderMap;
 
     private ArrayList<ResourcePool> resourcePools;
@@ -54,6 +56,11 @@ public class vSphere {
      */
     private vSphere(String ip, String username, String password) throws RemoteException, MalformedURLException {
         si = new ServiceInstance(new URL("https://" + ip + "/sdk"), username, password, true);
+
+        // Dereference password from memory for security reasons
+        password = "";
+        password = null;
+
         rootFolder = si.getRootFolder();
         System.out.println("Root folder: " + rootFolder.getName());
 
@@ -68,16 +75,7 @@ public class vSphere {
             hs = (HostSystem) hosts[0];
         }
 
-        System.out.print("Indexing VMs...");
-        VirtualMachinesMewMap = new HashMap<>();
-        VirtualMachinesMap = new HashMap<>();
-        ManagedEntity[] vmsMe = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
-        for(ManagedEntity vmMe : vmsMe) {
-            String key = vmMe.toString();
-            VirtualMachinesMewMap.put(key, new ManagedEntityWrapper(vmMe));
-            VirtualMachinesMap.put(key, (VirtualMachine)vmMe);
-        }
-        System.out.println("Done!");
+        DistributedVirtualPortgroup dvp = searchForPortgroup("dvPG-CIG-Blue-Train01-LAN");
 
         System.out.print("Indexing Folders...");
         FolderMewMap = new HashMap<>();
@@ -90,19 +88,31 @@ public class vSphere {
         }
         System.out.println("Done!");
 
-        // Get all virtual machine and host objects
-        // Holds Virtual Machine objects
-        //ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
-        // Holds System
-        //ManagedEntity[] mesHost = new InventoryNavigator(rootFolder).searchManagedEntities("HostSystem");
-
-        //SearchIndex si = new SearchIndex()
+        System.out.print("Indexing VMs...");
+        VirtualMachinesMewMap = new HashMap<>();
+        VirtualMachinesMap = new HashMap<>();
+        ManagedEntity[] vmsMe = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
+        for(ManagedEntity vmMe : vmsMe) {
+            String key = vmMe.toString();
+            VirtualMachinesMewMap.put(key, new ManagedEntityWrapper(vmMe));
+            VirtualMachinesMap.put(key, (VirtualMachine)vmMe);
+        }
+        System.out.println("Done!");
 
         if (si != null) {
             this.connected = true;
         } else {
             this.connected = false;
         }
+    }
+
+    public DistributedVirtualPortgroup searchForPortgroup(String name) throws RemoteException {
+        for (ManagedEntity dc : new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter")) {
+            ManagedEntity tmp = new InventoryNavigator(((Datacenter) dc).getNetworkFolder()).searchManagedEntity("DistributedVirtualPortgroup", name);
+            if(tmp != null) return (DistributedVirtualPortgroup) tmp;
+        }
+
+        return null;
     }
 
     public Folder getRootFolder() {
@@ -142,9 +152,10 @@ public class vSphere {
     public ArrayList<Thread> getFiles(DefaultMutableTreeNode datacenters, DefaultTreeModel defaultTreeModel) throws RemoteException {
         ArrayList<Thread> threads = new ArrayList<>();
 
-        for(ManagedEntity me : rootFolder.getChildEntity()) {
-            if(me != null && me.getMOR().type.equals("Datacenter")) {
-                Datacenter dc = (Datacenter)me;
+        for(ManagedEntity me : new InventoryNavigator(rootFolder).searchManagedEntities("Datacenter")) {
+            if(me != null) {
+                Datacenter dc = (Datacenter) me;
+
                 Folder vmf = dc.getVmFolder();
                 if(vmf == null)
                     continue;
