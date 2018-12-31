@@ -402,6 +402,11 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         }
     }
 
+    /**
+     * If ManagedEntityWrapper is a VM, this method will disconnect it from the specified network
+     * @param networkName Name of the network
+     * @return `true` on success, `false` otherwise
+     */
     public boolean unAssignFromNetwork(String networkName) {
         if(meType == Type.VM) {
             System.out.println("Attempting to un assign `" + getName() + "` from network `" + networkName + "`");
@@ -459,6 +464,11 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         return false;
     }
 
+    /**
+     * If ManagedEntityWrapper is a VM, this method will connect it to the specified network
+     * @param networkName Name of the network
+     * @return `true` on success and `false` otherwise
+     */
     public boolean assignToNetwork(String networkName) {
         //VirtualEthernetCard vec = getNicFromNetName(networkName);
         if(meType == Type.VM) {
@@ -471,14 +481,13 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
             // case 2: if network adapter exists, but is not configured - configure it to target network
             // case 3: if network adapter exists and is configured - create a new one and assign it to target network
 
-            DistributedVirtualSwitchPortConnection dvspc = getSwitchFromNetName(networkName);
-            if(dvspc == null) {
-                System.out.println("Failed to find the switch");
-                return false;
-            }
-
             boolean case2 = false;
             boolean success = false;
+            VirtualEthernetCardDistributedVirtualPortBackingInfo nicBacking = creteNewBacking(networkName);
+            if(nicBacking == null) {
+                System.out.println("Failed to generate backing...");
+                return false;
+            }
             VirtualMachineConfigSpec vmConfigSpec = new VirtualMachineConfigSpec();
             VirtualDeviceConfigSpec nicSpec = new VirtualDeviceConfigSpec();
 
@@ -493,13 +502,7 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                         System.out.println("Found unused network card, utilizing it...");
 
                         nicSpec.setOperation(VirtualDeviceConfigSpecOperation.edit);
-
-                        VirtualEthernetCardDistributedVirtualPortBackingInfo nicBacking = new VirtualEthernetCardDistributedVirtualPortBackingInfo();
-                        nicBacking.setPort(new DistributedVirtualSwitchPortConnection());
-                        nicBacking.getPort().setPortgroupKey(dvspc.getPortgroupKey());
-                        nicBacking.getPort().setSwitchUuid(dvspc.getSwitchUuid());
                         vec.setBacking(nicBacking);
-
                         nicSpec.setDevice(vec);
                     }
                 }
@@ -514,10 +517,6 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                 nicSpec.setOperation(VirtualDeviceConfigSpecOperation.add);
 
                 VirtualEthernetCard nic = new VirtualPCNet32();
-                VirtualEthernetCardDistributedVirtualPortBackingInfo nicBacking = new VirtualEthernetCardDistributedVirtualPortBackingInfo();
-                nicBacking.setPort(new DistributedVirtualSwitchPortConnection());
-                nicBacking.getPort().setPortgroupKey(dvspc.getPortgroupKey());
-                nicBacking.getPort().setSwitchUuid(dvspc.getSwitchUuid());
                 //nic.setAddressType("generated");
                 nic.setBacking(nicBacking);
                 //nic.setKey(4);
@@ -536,6 +535,7 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
 
             if(success) {
                 System.out.println("Successfully assigned VM to selected network!");
+                MainGUI.getInsatnce().setStatusMessage("Status: Successfully assigned VM to selected network!");
                 try {
                     nets = vm.getNetworks();
                     isNetworked = nets != null && nets.length != 0;
@@ -556,6 +556,34 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         return false;
     }
 
+
+    /**
+     * Will generate a new Backing Information for specified network
+     * @param networkName Name of the network
+     * @return
+     */
+    private VirtualEthernetCardDistributedVirtualPortBackingInfo creteNewBacking(String networkName) {
+        try {
+            VirtualEthernetCardDistributedVirtualPortBackingInfo nicBacking = new VirtualEthernetCardDistributedVirtualPortBackingInfo();
+            DistributedVirtualPortgroup dvp = vSphere.getInstance().searchForPortgroup(networkName);
+            nicBacking.setPort(new DistributedVirtualSwitchPortConnection());
+            nicBacking.getPort().setPortgroupKey(dvp.getConfig().key);
+            nicBacking.getPort().setSwitchUuid(vSphere.mainSwitchUUID);
+
+            return nicBacking;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            GuiHelper.messageBox(e.toString(), "Failed to create new network backing for selected network", true);
+        }
+
+        return null;
+    }
+
+    /**
+     * Will return Distributed Virtual Switch Port Connection if there is already at least 1 VM connected to that network
+     * @param networkName Name of the network
+     * @return
+     */
     private DistributedVirtualSwitchPortConnection getSwitchFromNetName(String networkName) {
         try {
             DistributedVirtualPortgroup dvp = vSphere.getInstance().searchForPortgroup(networkName);
@@ -568,8 +596,13 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
                     VirtualEthernetCardDistributedVirtualPortBackingInfo vecdvpb = (VirtualEthernetCardDistributedVirtualPortBackingInfo) vec.getBacking();
                     DistributedVirtualSwitchPortConnection dvspc = vecdvpb.getPort();
 
-                    if(dvspc != null)
-                    return dvspc;
+                    if(dvspc != null) {
+                        //System.out.println("Port group key: " + dvspc.portgroupKey);
+                        //System.out.println("Port key: " + dvspc.portKey);
+                        //System.out.println("Switch UUID: " + dvspc.switchUuid);
+
+                        return dvspc;
+                    }
                 }
             }
 
@@ -581,6 +614,11 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         return null;
     }
 
+    /**
+     * If ManagedEntityWrapper is a VM, this will return VirtualEthernetCard that is connected to the provided network
+     * @param networkName Name of the network
+     * @return
+     */
     public VirtualEthernetCard getNicFromNetName(String networkName) {
         if(meType == Type.VM) {
             VirtualMachine vm = vSphere.VirtualMachinesMap.get(meKey);
@@ -615,6 +653,9 @@ public class ManagedEntityWrapper implements Comparable<ManagedEntityWrapper> {
         return null;
     }
 
+    /**
+     * If ManagedEntityWrapper is a VM, tis method will remove all network adapters from it
+     */
     public void removeAllNetworkAdapters() {
         if(meType == Type.VM) {
             VirtualMachine vm = vSphere.VirtualMachinesMap.get(meKey);

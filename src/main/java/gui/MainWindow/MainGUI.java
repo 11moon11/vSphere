@@ -137,6 +137,7 @@ public class MainGUI extends JFrame {
             }
         });
 
+        //TODO: Do it in a thread
         set_network.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -167,13 +168,13 @@ public class MainGUI extends JFrame {
                 if (si == null) return;
 
                 if (si.assignToNetwork(networkName)) {
-                    MainGUI.getInsatnce().setStatusMessage("Status: Successfully assigned VM to the selected network!");
                     ((DefaultListModel<ManagedEntityWrapper>) not_networked_list.getModel()).remove(not_networked_list.getSelectedIndex());
                     updateTree();
                 }
             }
         });
 
+        //TODO: Do it in a thread
         unset_network.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {

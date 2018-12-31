@@ -24,6 +24,7 @@ public class vSphere {
     public static HashMap<String, VirtualMachine> VirtualMachinesMap;
     public static HashMap<String, String> PortGroupMap;
     public static HashMap<String, Folder> FolderMap;
+    public static String mainSwitchUUID;
 
     private ArrayList<ResourcePool> resourcePools;
 
@@ -75,7 +76,16 @@ public class vSphere {
             hs = (HostSystem) hosts[0];
         }
 
+        // Can be used for debugging purposes
         DistributedVirtualPortgroup dvp = searchForPortgroup("dvPG-CIG-Blue-Train01-LAN");
+
+        HostNetworkInfo hni = hs.getConfig().getNetwork();
+        for(HostProxySwitch hps : hni.proxySwitch) {
+            //TODO: allow user to choose which switch to use
+            if(hps.dvsName.equals("dvSwitchPrivate")) {
+                mainSwitchUUID = hps.dvsUuid;
+            }
+        }
 
         System.out.print("Indexing Networks...");
         NetworkMewMap = new HashMap<>();
